@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<config>
+      <modules>
+        <Social_Facebook>
+          <version>0.1.0</version>
+        </Social_Facebook>
+      </modules>
+	  <frontend>
+      <routers>
+        <facebook>
+          <use>standard</use>
+         <args>
+           <module>Social_Facebook</module>
+           <frontName>facebook</frontName>
+         </args>
+        </facebook>
+      </routers>
+	  <layout>
+          <updates>
+              <facebook>
+                  <file>facebook.xml</file>
+              </facebook>
+          </updates>
+      </layout>
+    </frontend>
+   <global>
+
+   
+   
+      <helpers>
+       <facebook>
+           <class>Social_Facebook_Helper</class>
+       </facebook>
+      </helpers>   
+
+	  <blocks><facebook><class>Social_Facebook_Block</class></facebook></blocks>
+					 <models>
+					<facebook>
+						<class>Social_Facebook_Model</class>
+						<resourceModel>facebook_mysql4</resourceModel>
+					</facebook>
+					<facebook_mysql4>
+						<class>Social_Facebook_Model_Mysql4</class>
+						<entities>
+							<facebook>
+								<table>tablename</table>
+							</facebook>
+						</entities>
+					</facebook_mysql4>
+
+				</models>
+				   <resources>
+					<facebook_setup>
+						<setup>
+							<module>Social_Facebook</module>
+						</setup>
+						<connection>
+							<use>core_setup</use>
+						</connection>
+					</facebook_setup>
+					<facebook_write>
+						<connection>
+							<use>core_write</use>
+						</connection>
+					</facebook_write>
+					<facebook_read>
+						<connection>
+							<use>core_read</use>
+						</connection>
+					</facebook_read>
+					
+				</resources>
+			 
+   </global> 
+   
+
+</config> 

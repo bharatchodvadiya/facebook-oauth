@@ -1,0 +1,18 @@
+<?xml version="1.0"?>   
+<layout version="0.1.0">   
+  	<default>
+		<reference name="after_body_start">
+            <block type="connectors/index" template="facebook/init.phtml" name="facebook_init" />
+        </reference>
+        <reference name="top.links">
+			<action method="addLink" translate="label title" module="facebook">
+			<label>Facebook Login</label>
+			<url helper="facebook/getConnectUrl"/>
+			<title>Facebook Connect </title><prepare/><urlParams/>
+			<position>100</position><liParams/>
+			<aParams><rel>login-facebook</rel></aParams></action>
+        </reference> 
+	</default>
+	
+</layout>   
+	

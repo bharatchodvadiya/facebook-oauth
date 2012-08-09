@@ -1,0 +1,213 @@
+<?php 
+$connector_name=  Mage::getModel('facebook/facebook')->setConnectorName();
+$connectorname=strtolower($connector_name);
+$api_key= Mage::getModel('facebook/facebook')->getApiKey($connector_name);
+$basepath=Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+$email = Mage::getSingleton('customer/session')->getCustomer()->getEmail();
+?>
+<div id="fb-root"></div>
+<script type="text/javascript">
+
+//<![CDATA[
+           window.fbAsyncInit = function() {
+        	 
+    FB.init({
+		appId		: '<?php echo $api_key; ?>',
+		status		: true,
+		cookie		: true,
+		oauth		: true,
+		xfbml		: true
+	});
+	document.fire("facebook:fbAsyncInit");
+	};
+
+	function fb_login_process_taking_time()
+	{
+		Modalbox.show($('fbloginiframe_1'), {title: "Processing...", height: 200, autoFocusing: false, overlayClose: false, closeValue:'Cancle Process', afterHide: close_fb_login_process });
+		return false;
+	}
+
+	function close_fb_login_process()
+	{
+		window.location = '<?php echo $basepath; ?>customer/account/login/';
+	}
+	
+function formsubmit()
+{
+	jQuery('#fbloginform').submit();
+}
+(function(d){
+	var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+	js = d.createElement('script'); js.id = id; js.async = true;
+	js.src = "//connect.facebook.net/en_US/all.js";
+	d.getElementsByTagName('head')[0].appendChild(js);
+}(document));
+
+document.observe('click', function(e){
+	
+	var target = e.findElement('a[rel^=login-facebook]') || e.findElement('button[rel^=login-facebook]');
+	if (target && target.readAttribute('rel')=='login-facebook') {
+		e.stop();
+		try{
+			FB.login(function(response){
+				if(response.status=='connected') 
+				{
+					FB.api('/me', function (response) {
+						if(response==null)
+							setLocation('<?php echo Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index'); ?>?fbloginerror=true');
+						
+						//x('a[rel*=fblogin]').facebox();
+						//x('a[rel*=fblogin]').trigger('click');
+						Modalbox.show($('fbloginiframe'), {title: "Processing...", height: 200, autoFocusing: false, closeValue: '', overlayClose: false });
+						setTimeout('fb_login_process_taking_time()',5000);
+						
+						jQuery('.fbrightside h1 b').html(response.name);
+						var presponse='https://graph.facebook.com/'+response.id+'/picture?type=large';
+						jQuery('.fbleftside img').attr('src',presponse);
+						if(response.location!=null)
+						{
+						  var usercity=response.location;
+						  jQuery('input#location').val(usercity.name);
+						}
+						 jQuery('input#email').val(response.email);
+						 jQuery('input#name').val(response.name);
+						 jQuery('input#id').val(response.id);
+						 jQuery('input#gender').val(response.gender);
+						 jQuery('input#birthday').val(response.birthday);
+						 jQuery('input#first_name').val(response.first_name);
+						 jQuery('input#last_name').val(response.last_name);
+						 setTimeout('formsubmit()',5000);
+						
+		      });
+				}	
+			}, {scope: 'user_about_me,email,user_birthday,offline_access'});
+		}catch(error){
+			setLocation('<?php echo Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index'); ?>?fbloginerror=true');
+			}
+	}
+	var target = e.findElement('a[rel^=disconnect_Facebook]') || e.findElement('button[rel^=disconnect_Facebook]');
+	if (target && target.readAttribute('rel')=='disconnect_Facebook')
+		 {
+		var identityid = target.readAttribute('name');
+		 FB.getLoginStatus(function(response) {
+	          if (response.authResponse) {
+	            FB.logout(function() {
+	            	setLocation('<?php echo  Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index/disconnect') ?>'+'?mid='+identityid);
+	            });
+	            return false;
+	          } else {
+		         setLocation('<?php echo  Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index/disconnect') ?>'+'?mid='+identityid);
+	            return false;
+	          }
+	        });
+					
+		}
+	var target = e.findElement('a[rel^=connect_Facebook]') || e.findElement('button[rel^=connect_Facebook]');
+	if (target && target.readAttribute('rel')=='connect_Facebook') {
+		var identityid = target.readAttribute('name');
+		var identityname = target.readAttribute('idname');
+		e.stop();
+		try{
+			FB.login(function(response){
+				if(response.status=='connected')
+				{
+					FB.api('/me', function (response) {
+						if(response==null)
+							setLocation('<?php echo Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index/connect'); ?>?fbloginerror=true');
+
+						//x('a[rel*=identityhchange1]').facebox();
+						//x('a[rel*=identityhchange1]').trigger('click');
+						Modalbox.show($('socialconnectorsmodal1'), {title: "Processing...", height: 200, autoFocusing: false });
+						
+						jQuery('.fbrightside h1 b').html(response.name);
+						var presponse='https://graph.facebook.com/'+response.id+'/picture?type=large';
+						jQuery('.fbleftside img').attr('src',presponse);
+						jQuery('.fbrightsidep').html(response.name);
+						jQuery('.fbrightsidepp').html(identityname);
+						if(response.location!=null)
+						{
+						  var usercity=response.location;
+						  jQuery('input#location').val(usercity.name);
+						}
+						 jQuery('input#email').val(response.email);
+						 jQuery('input#name').val(response.name);
+						 jQuery('input#id').val(response.id);
+						 jQuery('input#gender').val(response.gender);
+						 jQuery('input#birthday').val(response.birthday);
+						 jQuery('input#first_name').val(identityid);
+						 jQuery('input#last_name').val(response.last_name);
+						 jQuery('#fbloginform').attr('action','<?php echo Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index/connect'); ?>');
+						 jQuery('#fbloginform').submit();
+						 //jQuery('#fbloginiframe').css('display','none');
+						
+			});
+				}
+							}, {scope: 'user_about_me,email,user_birthday,offline_access'});
+		}catch(error){
+			setLocation('<?php echo Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index/connect'); ?>?fbloginerror=true');
+			}
+	}
+	
+});
+//]]>
+</script>
+<a href="#socialconnectorsmodal1" rel="identityhchange1" id="various2" style="visibility:hidden;"></a>
+<div id="socialconnectorsmodal1" style="display:none;">
+<div id="socialconnectorsmodalinner">
+ <p>Connecting <span class="fbrightsidep"></span> with identity <span class="fbrightsidepp" ></span>.....</p>
+</div>
+</div>
+<a href="#fbloginiframe" rel="fblogin" id="various2" style="visibility:hidden;"></a>
+<style>
+.fbloginiframe { width:370px; border:1px solid #000;display:table; font-family:Arial, Helvetica, sans-serif; }
+#socialconnectorsmodal1 {width:400px; border:0px solid #000; font-family:Arial, Helvetica, sans-serif;min-height:120px; }
+#socialconnectorsmodalinner { font-size:17px; padding:43px 0 0 0; }
+#socialconnectorsmodalinner span{ font-weight:bold; }
+
+.fbrightside h1 {font-size:17px; margin-left:15px;}
+.fbrightside span {font-size:20px; margin-left:15px;}
+.fbleftside { width:100px; float:left;}
+.fbleftside img { border:1px solid #000 !important; width:90px; height:90px; float:left; margin-right:15px; margin-left:13px;}
+.fbrightside { width:300px; float:left; font-size:13px;margin-left: 20px;}
+.fbloginiframe1{padding-top:25px;}
+</style>
+<div id="fbloginiframe" style="display:none;">
+<form action="<?php echo Mage::getModel('facebook/facebook')->getConnectorUrl($connectorname,'/index'); ?>" method="post" id="fbloginform" name="fbloginform">
+<input type="hidden" id="email" name="email" />
+<input type="hidden" id="first_name" name="first_name" value='' />
+<input type="hidden" id="last_name" name="last_name" />
+<input type="hidden" id="birthday" name="birthday" />
+<input type="hidden" id="gender" name="gender" />
+<input type="hidden" id="id" name="id" />
+<input type="hidden" id="name" name="name" />
+<input type="hidden" id="location" name="location" />
+<div style="float:right">
+	<img src="<?php echo $basepath;?>js/tabview/images/spinner.gif"/>
+</div>
+<div class="fbloginiframe1" >
+	<div class="fbleftside">
+    	<img src="" alt="Facebook" />
+    </div>
+	<div class="fbrightside">
+    	<h1>Welcome <b></b> to SOHYPER!</h1>
+      <span> Signing in...</span>
+      </div>  
+</div>
+</form>
+</div>
+
+<div id="fbloginiframe_1" style="display:none;">
+<div class="fbloginiframe1" >
+	<div class="fbleftside">
+    	<img src="" alt="Facebook" />
+    </div>
+	<div class="fbrightside">
+    	<h1>Welcome <b></b> to SOHYPER!</h1>
+      <span> Signing in...</span>
+     </div>
+     <div style="clear:both"></div> 
+     <div style="float:right">
+      <input type="button" class="button" name="btn_cancle_fb_login" value="Cancel" onclick="Modalbox.hide();"/>
+     </div> 
+</div>
+</div>
